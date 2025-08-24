@@ -4,7 +4,7 @@ node {
             // Checkout code from repository
             checkout scm
             
-            // Clean and package the application
+            // Clean and package the application (skip tests for build stage)
             sh 'mvn -B -DskipTests clean package'
             
             echo 'Build stage completed successfully'
@@ -16,7 +16,7 @@ node {
     
     stage('Test') {
         try {
-            // Run tests
+            // Run Maven tests
             sh 'mvn test'
             
             echo 'Test stage completed successfully'
@@ -44,33 +44,3 @@ node {
         }
     }
 }
-
-
-// pipeline {
-//     agent any
-//     options {
-//         skipStagesAfterUnstable()
-//     }
-//     stages {
-//         stage('Build') {
-//             steps {
-//                 sh 'mvn -B -DskipTests clean package'
-//             }
-//         }
-//         stage('Test') {
-//             steps {
-//                 sh 'mvn test'
-//             }
-//             post {
-//                 always {
-//                     junit 'target/surefire-reports/*.xml'
-//                 }
-//             }
-//         }
-//         stage('Deliver') { 
-//             steps {
-//                 sh './jenkins/scripts/deliver.sh' 
-//             }
-//         }
-//     }
-// }
