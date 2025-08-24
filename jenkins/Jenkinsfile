@@ -1,28 +1,76 @@
-pipeline {
-    agent any
-    options {
-        skipStagesAfterUnstable()
+node {
+    stage('Build') {
+        try {
+            // Checkout code from repository
+            checkout scm
+            
+            // Clean and package the application
+            sh 'mvn -B -DskipTests clean package'
+            
+            echo 'Build stage completed successfully'
+        } catch (Exception e) {
+            echo "Build stage failed: ${e.getMessage()}"
+            throw e
+        }
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'mvn -B -DskipTests clean package'
-            }
+    
+    stage('Test') {
+        try {
+            // Run tests
+            sh 'mvn test'
+            
+            echo 'Test stage completed successfully'
+        } catch (Exception e) {
+            echo "Test stage failed: ${e.getMessage()}"
+            throw e
+        } finally {
+            // Always publish test results
+            junit 'target/surefire-reports/*.xml'
         }
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
-        }
-        stage('Deliver') { 
-            steps {
-                sh './jenkins/scripts/deliver.sh' 
-            }
+    }
+    
+    stage('Deliver') {
+        try {
+            // Make the delivery script executable
+            sh 'chmod +x ./jenkins/scripts/deliver.sh'
+            
+            // Run the delivery script
+            sh './jenkins/scripts/deliver.sh'
+            
+            echo 'Deliver stage completed successfully'
+        } catch (Exception e) {
+            echo "Deliver stage failed: ${e.getMessage()}"
+            throw e
         }
     }
 }
+
+
+// pipeline {
+//     agent any
+//     options {
+//         skipStagesAfterUnstable()
+//     }
+//     stages {
+//         stage('Build') {
+//             steps {
+//                 sh 'mvn -B -DskipTests clean package'
+//             }
+//         }
+//         stage('Test') {
+//             steps {
+//                 sh 'mvn test'
+//             }
+//             post {
+//                 always {
+//                     junit 'target/surefire-reports/*.xml'
+//                 }
+//             }
+//         }
+//         stage('Deliver') { 
+//             steps {
+//                 sh './jenkins/scripts/deliver.sh' 
+//             }
+//         }
+//     }
+// }
