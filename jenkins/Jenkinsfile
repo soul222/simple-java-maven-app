@@ -2,12 +2,12 @@ node {
     stage('Checkout') {
         checkout scm
     }
-
-    stage('Build') {
-        docker.image('maven:3.9.9-eclipse-temurin-21').inside {
-            sh 'mvn -B -DskipTests clean package'
-        }
+}stage('Build') {
+    docker.image('maven:3.9.9-eclipse-temurin-21').inside {
+        sh 'mvn clean package -U -DskipTests'
     }
+}
+
 
     stage('Test') {
         docker.image('maven:3.9.9-eclipse-temurin-21').inside {
