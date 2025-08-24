@@ -1,46 +1,20 @@
 node {
     stage('Build') {
-        try {
-            // Checkout code from repository
+        docker.image('maven:3.9.9-eclipse-temurin-21').inside {
             checkout scm
-            
-            // Clean and package the application (skip tests for build stage)
             sh 'mvn -B -DskipTests clean package'
-            
-            echo 'Build stage completed successfully'
-        } catch (Exception e) {
-            echo "Build stage failed: ${e.getMessage()}"
-            throw e
         }
     }
-    
+
     stage('Test') {
-        try {
-            // Run Maven tests
+        docker.image('maven:3.9.9-eclipse-temurin-21').inside {
             sh 'mvn test'
-            
-            echo 'Test stage completed successfully'
-        } catch (Exception e) {
-            echo "Test stage failed: ${e.getMessage()}"
-            throw e
-        } finally {
-            // Always publish test results
             junit 'target/surefire-reports/*.xml'
         }
     }
-    
+
     stage('Deliver') {
-        try {
-            // Make the delivery script executable
-            sh 'chmod +x ./jenkins/scripts/deliver.sh'
-            
-            // Run the delivery script
-            sh './jenkins/scripts/deliver.sh'
-            
-            echo 'Deliver stage completed successfully'
-        } catch (Exception e) {
-            echo "Deliver stage failed: ${e.getMessage()}"
-            throw e
-        }
+        sh 'chmod +x ./jenkins/scripts/deliver.sh'
+        sh './jenkins/scripts/deliver.sh'
     }
 }
